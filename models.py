@@ -117,3 +117,73 @@ class ReactionModel(db.Model):
             conditions_json=json.dumps(reaction_obj.required_conditions),
             equation_string=equation_str
         )
+
+
+class ChemicalRuleModel(db.Model):
+    __tablename__ = 'chemical_rules'  # Ánh xạ tới bảng chemical_rules
+
+    # CÁC TRƯỜNG DỮ LIỆU CSDL
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False, unique=True)
+    formula = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+
+    # Sử dụng JSONEncodedDict cho cột required_inputs (ví dụ: ["m", "M"])
+    # Cột này sẽ được lưu dưới dạng chuỗi JSON và được tự động decode thành list/dict Python
+    required_inputs = db.Column(JSONEncodedDict, nullable=False)
+
+    output_var = db.Column(db.String(50), nullable=False)
+    expression = db.Column(db.Text, nullable=False)
+
+    # is_used: bool = False  # Không cần thiết cho luật tính toán/công thức
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Chuyển đổi ChemicalRuleModel sang dictionary.
+        Do required_inputs đã dùng JSONEncodedDict, nên nó đã là list Python.
+        """
+        return {
+            'id': self.id,
+            'name': self.name,
+            'formula': self.formula,
+            'description': self.description,
+            # required_inputs đã là list/dict nhờ JSONEncodedDict
+            'required_inputs': self.required_inputs,
+            'output_var': self.output_var,
+            'expression': self.expression
+        }
+
+    # ==================================================================
+    # CÁC PROPERTY HỖ TRỢ (Tùy chọn)
+    # ==================================================================
+
+    @property
+    def required_vars(self) -> List[str]:
+        """Trả về danh sách các biến đầu vào cần thiết."""
+        # required_inputs đã là list nhờ JSONEncodedDict
+        return self.required_inputs
+
+    def __repr__(self):
+        inputs_str = ', '.join(self.required_inputs)
+        return (
+            f"<ChemicalRuleModel(id={self.id}, name='{self.name}', formula='{self.formula}', "
+            f"inputs=[{inputs_str}], output='{self.output_var}')>"
+        )
+
+class ElementModel(db.Model):
+    __tablename__ = 'elements'
+
+    id = db.Column(db.Integer, primary_key=True)
+    # Ký hiệu (Symbol) của nguyên tố, ví dụ: H, O, Fe
+    mark = db.Column(db.String(10), nullable=False, unique=True)
+    # Số thứ tự nguyên tử (Atomic Number)
+    atomic_number = db.Column(db.Integer, nullable=False, unique=True)
+    # Khối lượng nguyên tử (Atomic Mass)
+    atomic_mass = db.Column(db.Float, nullable=False)
+    # Hóa trị (Valence)
+    valence = db.Column(db.Integer)
+
+    def __repr__(self):
+        return (
+            f"<ElementModel(mark='{self.mark}', num={self.atomic_number}, mass={self.atomic_mass})>"
+        )
