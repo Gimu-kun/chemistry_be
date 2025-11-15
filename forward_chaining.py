@@ -55,7 +55,9 @@ def run_forward_chaining(initial_reactants_str: str, reaction_conditions_str: st
                 used_rules_info.append({
                     "type": r.type,
                     "description": r.description,
-                    "reaction": reaction_summary
+                    "reaction": reaction_summary,
+                    "phenomena": r.phenomena,
+                    "phenomena_detail": r.phenomena_detail_json
                 })
 
                 # 3. Thêm sản phẩm mới vào Known Facts

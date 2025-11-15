@@ -39,6 +39,8 @@ class ReactionModel(db.Model):
     products_json = db.Column(db.Text, nullable=False)
     conditions_json = db.Column(db.Text, nullable=True)
     equation_string = db.Column(db.String(255), nullable=True)
+    phenomena = db.Column(db.String(255))
+    phenomena_detail_json = db.Column(JSONEncodedDict)
 
     # THUỘC TÍNH LOGIC (KHÔNG LƯU VÀO DB)
     # is_used dùng cho thuật toán tìm kiếm (forward-chaining)
@@ -65,7 +67,9 @@ class ReactionModel(db.Model):
             'reactants': safe_json_loads(self.reactants_json),
             'products': safe_json_loads(self.products_json),
             'conditions': safe_json_loads(self.conditions_json),
-            'equation_string': self.equation_string
+            'equation_string': self.equation_string,
+            'phenomena': self.phenomena,
+            'phenomena_detail': self.phenomena_detail_json
         }
 
     # ==================================================================

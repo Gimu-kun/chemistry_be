@@ -347,6 +347,7 @@ def find_calculation_path(known_vars: Set[str], target_var: str, all_rules: List
 
 def is_react_available(reaction: Any, known_facts: set, initial_conditions: set, check_conditions: bool = True) -> bool:
     """Kiểm tra xem một phản ứng có thể xảy ra hay không (dành cho ReactionModel)."""
+    print("known_facts",known_facts)
     if reaction.is_used:
         return False
 

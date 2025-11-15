@@ -10,26 +10,28 @@ Reaction = models.ReactionModel
 def _reaction_to_dict(reaction: Reaction) -> Dict[str, Any]:
     """
     Chuyển đổi ReactionModel object thành dictionary để trả về API.
-    Sử dụng các property và trường đã có của ReactionModel.
     """
     # Dùng to_dict() của ReactionModel để lấy các thuộc tính đã decode JSON
     data = reaction.to_dict()
 
-    # Bổ sung các thông tin khác cần thiết cho API
+    # Bổ sung các thông tin cần thiết
     data["is_used"] = reaction.is_used
 
-    # Lấy chuỗi phương trình từ __repr__ hoặc từ trường equation_string nếu có
-    # Ta sẽ dùng str(reaction) để lấy chuỗi repr đã được định dạng
-    repr_lines = str(reaction).split('\n')
-    equation_line = next((line for line in repr_lines if line.startswith("Phương trình:")), None)
+    # Lấy description từ cột phenomena (đã được đổi tên trong DB)
+    data["description"] = data.pop("phenomena", reaction.phenomena)
 
-    # Lấy chuỗi phương trình từ line thứ 3 của repr
-    data["equation_string"] = equation_line.replace("Phương trình: ", "").strip() if equation_line else data.get(
-        "equation_string", "N/A")
+    # Đảm bảo các key cho tính tương thích API (đã là 'reactants', 'products', 'conditions' từ to_dict())
 
-    # Đảm bảo các key cũ vẫn tồn tại cho tính tương thích API
-    data["reactants"] = data.pop("reactants", [])
-    data["conditions"] = data.pop("conditions", [])
+    # Phần trích xuất chuỗi phương trình đã có sẵn trong data nếu bạn load từ DB
+    # (data["equation_string"] = reaction.equation_string)
+
+    # Nếu không có equation_string (ví dụ: data được tạo thủ công), ta có thể tạo lại
+    if not data.get("equation_string"):
+        reactants_str = " + ".join(reaction.required_reactants)
+        products_str = " + ".join(reaction.products)
+        conditions = reaction.required_conditions if reaction.required_conditions else []
+        conditions_str = f" [{', '.join(conditions)}]" if conditions else ""
+        data["equation_string"] = f"{reactants_str}{conditions_str} -> {products_str}"
 
     return data
 

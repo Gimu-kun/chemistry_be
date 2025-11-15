@@ -11,6 +11,7 @@ from collections import deque
 import models
 from balancer import balance_equation
 from forward_chaining import run_forward_chaining
+from identification import identify_chemicals
 from models import db, ReactionModel, ChemicalRuleModel
 
 # Import các hàm từ logic hóa học
@@ -263,10 +264,6 @@ def api_find_and_calculate_path():
         "calculation_path_details": calculation_steps
     })
 
-
-# ======================================================================
-# CÁC API ENDPOINTS KHÁC (Giữ nguyên)
-# ======================================================================
 # ... (Giữ nguyên các hàm api_forward_chaining, api_find_reaction_path, api_balance_equation, api_calculate_rule) ...
 @app.route('/api/forward-chaining', methods=['POST'])
 def api_forward_chaining():
@@ -354,9 +351,20 @@ def api_calculate_rule():
         return jsonify({"success": False, "error": f"Lỗi không xác định trong tính toán: {str(e)}"}), 500
 
 
-# ======================================================================
-# KHỞI CHẠY (Giữ nguyên)
-# ======================================================================
+@app.route('/api/identify-chemicals', methods=['POST'])
+def api_identify_chemicals():
+    data = request.get_json()
+    unknown_chemicals = data.get('chemicals', [])
+
+    if not unknown_chemicals or len(unknown_chemicals) < 2:
+        return jsonify({"success": False, "error": "Cung cấp ít nhất 2 chất cần nhận biết."}), 400
+
+    try:
+        identification_result = identify_chemicals(unknown_chemicals)
+
+        return jsonify({"success": True, "data": identification_result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
     setup_database(app)
